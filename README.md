@@ -1,16 +1,31 @@
 # SQAT-LD: Speech Quality Assessment Transformer Utilizing Listener Dependent Modeling for Zero-Shot Out-of-Domain MOS Prediction
 
-### Abstract
-In this paper, we propose the speech quality assessment transformer utilizing listener dependent modeling (SQAT-LD) mean opinion score (MOS) prediction system, which was submitted to the 2023 VoiceMOS Challenge. The system is based on a combination of self-supervised learning (SSL) models and listener-dependent modeling. Due to this challenge’s emphasis on real-world and challenging zero-shot out-of-domain MOS prediction in three different voice evaluation scenarios, we specifically designed a two-branch module to predict scores and weights for each frame, aiming to achieve better generalization. In the challenge, our system achieved fourth place in Track 1a, second place in Track 1b and first place in Track 2. Additionally, we conducted an ablation study to investigate the effectiveness of our proposed method.
+[![paper](https://img.shields.io/badge/IEEE-Paper-green.svg)](https://ieeexplore.ieee.org/document/10389681)
 
-<a href="https://ieeexplore.ieee.org/document/10389681" target="_blank">Full paper</a> 
+This repository is the official PyTorch implementation of SQAT-LD: Speech Quality Assessment Transformer Utilizing Listener Dependent Modeling for Zero-Shot Out-of-Domain MOS Prediction. :fire::fire::fire: We won first place in the **VoiceMOS Challenge 2023 Track 2**.
 
 
-### Dataset ###
+
+
+## Introduction ##
+
+<p align="center"><img src="./poster/poster-asru.png" alt="Illustration of SQAT-LD." width="500"/></p>
+
+
+## Getting Started  
+### Prepare the SSAST Pretrained-Models
+
+| Model Name                                                                                        | Data  | Pretrain fshape | Pretrain tshape | #Masked   Patches | Model Size  | Avg Audio  Performance | Avg Speech  Performance |
+|---------------------------------------------------------------------------------------------------|-------|-----------------|-----------------|-------------------|-------------|------------------------|-------------------------|
+| [SSAST-Base-Frame-400](https://www.dropbox.com/s/nx6nl4d4bl71sm8/SSAST-Base-Frame-400.pth?dl=1)   | AudioSet + Librispeech | 128             | 2               | 400               | Base (89M)  | 57.6                   | 84.0                    |
+
+## Dataset ##
 You can download the dataset in the following  <a href="https://zenodo.org/record/6572573#.ZCorDy8Rr0o" target="_blank">link</a> 
 
 
-### Citation ###
+
+
+## Citation ##
 
 Please kindly cite our paper, if you find this code is useful.
 ```bibtex
@@ -24,3 +39,6 @@ Please kindly cite our paper, if you find this code is useful.
   pages={1-6},
   keywords={Databases;Conferences;Self-supervised learning;Predictive models;Transformers;Quality assessment;Automatic speech recognition;VoiceMOS Challenge;synthetic speech evaluation;MOS prediction;self-supervised learning;zero-shot},
   doi={10.1109/ASRU57964.2023.10389681}}
+```
+
+
