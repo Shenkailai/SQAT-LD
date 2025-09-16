@@ -84,3 +84,30 @@ tr_bias_min_r: 0.7 # minimum correlation threshold to be reached before estimati
 tr_bias_anchor_db: null # name of anchor dataset (optional)
 tr_verbose: 2 
 use_biasloss: false
+
+# Database normalization statistics (moved from hardcoded values)
+norm_stats:
+  NISQA_TEST_LIVETALK:
+    nisqa: [-9.051971, 3.7531793]
+  NISQA_TEST_FOR:
+    nisqa: [-8.937617, 4.2769117]
+  NISQA_TEST_P501:
+    nisqa: [-9.90131, 4.708985]
+  NISQA_VAL_LIVE:
+    nisqa: [-9.823734, 3.6818407]
+  NISQA_VAL_SIM:
+    nisqa: [-8.027123, 4.3762627]
+  NISQA_VAL:
+    nisqa: [-8.185567, 4.3552947]
+  tencent_with:
+    tencent: [-8.642287, 4.199733]
+  tencent_without:
+    tencent: [-9.084293, 5.4488106]
+  TMHINTQI_Valid:
+    voicemos2023: [-4.865034, 4.1673865]
+  VoiceMOS2022_mian_Test:
+    voicemos2023: [-8.353344, 4.4906945]
+  VoiceMOS2022_OOD_unlabeled1:
+    voicemos2023: [-7.7979817, 4.426462]
+  VoiceMOS2022_OOD_Test1:
+    voicemos2023: [-7.64568, 4.315633]
