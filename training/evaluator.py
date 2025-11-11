@@ -25,7 +25,20 @@ def eval_epoch(epoch: int, net: torch.nn.Module, criterion, test_loader,
         
     Returns:
         (SRCC, PLCC, RMSE) 评估指标
+        
+    Raises:
+        ValueError: 如果参数无效
     """
+    # 输入验证
+    if epoch < 0:
+        raise ValueError(f"epoch必须为非负整数，得到: {epoch}")
+    
+    if len(test_loader) == 0:
+        raise ValueError("测试数据加载器为空")
+    
+    if mean_listener_id < 0:
+        raise ValueError(f"mean_listener_id必须为非负整数，得到: {mean_listener_id}")
+    
     net.eval()
     predictions, labels = [], []
 

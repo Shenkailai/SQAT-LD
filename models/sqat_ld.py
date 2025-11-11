@@ -189,32 +189,17 @@ class SQAT_LD(nn.Module):
         # 最终重排列用于评分
         x = rearrange(x, 'b c h w -> b (h w) c', h=self.f_dim, w=self.t_dim)
         
-        # 加权评分计算（批量化处理）
-        scores = self._compute_weighted_score(x)
-        judge_scores = self._compute_weighted_score(x)  # 使用相同的网络
-        
-        return scores.unsqueeze(1), judge_scores.unsqueeze(1)
-    
-    def _compute_weighted_score(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        计算加权质量评分
-        
-        Args:
-            x: 特征张量 [B, seq_len, embed_dim]
-            
-        Returns:
-            质量评分 [B]
-        """
-        # 计算特征评分和权重
+        # 计算特征评分和权重（共享计算，避免重复）
         features = self.fc_score(x)  # [B, seq_len, 2]
         weights = self.fc_weight(x)  # [B, seq_len, 2]
         
-        # 加权平均
-        weighted_features = features * weights  # [B, seq_len, 2]
+        # 加权平均计算质量评分
+        weighted_features = features * weights
         scores = torch.sum(weighted_features, dim=(1, 2)) / torch.sum(weights, dim=(1, 2))
         
-        return scores
-
-
-# 测试代码已移除 - 在实际项目中建议使用单独的测试文件
+        # 使用最后的MLP头生成最终预测
+        mean_features = torch.mean(x, dim=1)  # [B, embed_dim]
+        judge_scores = self.mlp_head(mean_features).squeeze(-1)  # [B]
+        
+        return scores.unsqueeze(1), judge_scores.unsqueeze(1)
 

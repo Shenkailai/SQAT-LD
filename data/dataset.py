@@ -109,10 +109,21 @@ class SpeechQualityDataset(Dataset):
             
         Returns:
             处理后的Mel特征张量
+            
+        Raises:
+            FileNotFoundError: 如果音频文件不存在
+            RuntimeError: 如果音频文件加载失败
         """
-        # 加载音频并去除直流分量
-        waveform, sr = torchaudio.load(filename)
-        waveform = waveform - waveform.mean()
+        # 检查文件是否存在
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"音频文件不存在: {filename}")
+        
+        try:
+            # 加载音频并去除直流分量
+            waveform, sr = torchaudio.load(filename)
+            waveform = waveform - waveform.mean()
+        except Exception as e:
+            raise RuntimeError(f"加载音频文件失败 {filename}: {str(e)}")
         
         # 提取Mel滤波器组特征
         fbank = torchaudio.compliance.kaldi.fbank(
@@ -201,13 +212,21 @@ class SpeechQualityDataset(Dataset):
         # 处理不同模式的特征
         if self.double_ended:
             fbank, fbank_ref = fbank
-            # TODO: 双端模式的进一步处理
+            # 双端模式：拼接参考和退化音频特征
+            fbank_ref = self._preprocess_fbank(fbank_ref)
+            fbank = self._preprocess_fbank(fbank)
+            # 在特征维度上拼接，实现双端输入
+            fbank = torch.cat([fbank, fbank_ref], dim=1)
         elif self.hallucinate:
             fbank, fbank_hall = fbank
-            # TODO: 幻觉模式的进一步处理
-        
-        # 特征预处理：转置以适配模型输入
-        fbank = self._preprocess_fbank(fbank)
+            # 幻觉模式：将增强音频和退化音频特征拼接
+            fbank_hall = self._preprocess_fbank(fbank_hall)
+            fbank = self._preprocess_fbank(fbank)
+            # 在特征维度上拼接，为模型提供增强信息
+            fbank = torch.cat([fbank, fbank_hall], dim=1)
+        else:
+            # 单端模式：标准预处理
+            fbank = self._preprocess_fbank(fbank)
         
         # 归一化
         if not self.skip_norm and self.norm_mean is not None and self.norm_std is not None:
