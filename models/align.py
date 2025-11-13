@@ -271,13 +271,12 @@ class Alignment(torch.nn.Module):
         super().__init__()
         
         # 选择注意力计算方法
-        if att_method == 'bahd':
+        if att_method in ('bahd', 'luong'):
             if q_dim is None or y_dim is None:
-                raise ValueError("Bahdanau 注意力需要提供 q_dim 和 y_dim")
+                raise ValueError(f"{att_method.capitalize()} 注意力需要提供 q_dim 和 y_dim")
+        if att_method == 'bahd':
             self.att = AttBahdanau(q_dim=q_dim, y_dim=y_dim)
         elif att_method == 'luong':
-            if q_dim is None or y_dim is None:
-                raise ValueError("Luong 注意力需要提供 q_dim 和 y_dim")
             self.att = AttLuong(q_dim=q_dim, y_dim=y_dim)
         elif att_method == 'dot':
             self.att = AttDot()
