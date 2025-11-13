@@ -31,7 +31,17 @@ def train_epoch(epoch: int, net: torch.nn.Module, criterion, optimizer, schedule
         
     Returns:
         (loss, SRCC, PLCC, RMSE) 训练指标
+        
+    Raises:
+        ValueError: 如果参数无效
     """
+    # 输入验证
+    if epoch < 0:
+        raise ValueError(f"epoch必须为非负整数，得到: {epoch}")
+    
+    if len(train_loader) == 0:
+        raise ValueError("训练数据加载器为空")
+    
     net.train()
     losses = []
     predictions, labels = [], []
@@ -85,6 +95,83 @@ def train_epoch(epoch: int, net: torch.nn.Module, criterion, optimizer, schedule
     return avg_loss, rho_s, rho_p, rmse
 
 
+def _create_model_tag(args: Dict[str, Any]) -> str:
+    """
+    创建模型标签用于标识训练实验
+    
+    Args:
+        args: 配置参数
+        
+    Returns:
+        模型标签字符串
+    """
+    components = [
+        f"bs_{args['batch_size']}",
+        f"seed_{args['seed']}",
+        args['loss_type'],
+        args['att_method'],
+        args['apply_att_method']
+    ]
+    
+    # 添加备注（如果存在）
+    if args.get('comment'):
+        components.append(args['comment'])
+    
+    return "_".join(components)
+
+
+def _ensure_directories(base_path: str, model_tag: str) -> Dict[str, str]:
+    """
+    创建必要的目录结构
+    
+    Args:
+        base_path: 基础输出路径
+        model_tag: 模型标签
+        
+    Returns:
+        包含各类路径的字典
+    """
+    paths = {
+        'log': os.path.join(base_path, 'logs'),
+        'tensorboard': os.path.join(base_path, 'tensorboard'),
+        'model': os.path.join(base_path, 'models', model_tag)
+    }
+    
+    for path_type, path in paths.items():
+        os.makedirs(path, exist_ok=True)
+        print(f'[Info] {path_type}目录: {path}')
+    
+    return paths
+
+
+def _setup_logging(log_path: str, model_tag: str, args: Dict[str, Any]) -> None:
+    """
+    配置日志系统
+    
+    Args:
+        log_path: 日志目录路径
+        model_tag: 模型标签
+        args: 配置参数
+    """
+    log_file = os.path.join(log_path, f'{model_tag}.log')
+    logging.basicConfig(
+        filename=log_file,
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        filemode='w'  # 覆盖模式，每次训练生成新日志
+    )
+    
+    # 记录关键配置信息
+    logging.info("=" * 80)
+    logging.info(f"训练实验标签: {model_tag}")
+    logging.info(f"评委数量: {args.get('num_judges', 'N/A')}")
+    logging.info(f"平均听众ID: {args.get('mean_listener_id', 'N/A')}")
+    logging.info(f"批次大小: {args['batch_size']}")
+    logging.info(f"学习率: {args.get('tr_lr', 'N/A')}")
+    logging.info(f"损失函数: {args['loss_type']}")
+    logging.info("=" * 80)
+
+
 def setup_directories_and_logging(args: Dict[str, Any]) -> Tuple[str, str, str]:
     """
     设置训练所需的目录和日志
@@ -95,28 +182,15 @@ def setup_directories_and_logging(args: Dict[str, Any]) -> Tuple[str, str, str]:
     Returns:
         (model_path, tensorboard_path, model_tag) 路径信息
     """
-    model_tag = f"bs_{args['batch_size']}_seed_{args['seed']}_{args['loss_type']}_{args['att_method']}_{args['apply_att_method']}_{args['comment']}"
+    # 创建模型标签
+    model_tag = _create_model_tag(args)
     
-    # 创建目录
+    # 创建目录结构
     base_path = os.path.join(args['output_dir'], args['dataset'])
-    paths = {
-        'log': os.path.join(base_path, 'logs'),
-        'tensorboard': os.path.join(base_path, 'tensorboard'),
-        'model': os.path.join(base_path, 'models', model_tag)
-    }
+    paths = _ensure_directories(base_path, model_tag)
     
-    for path_type, path in paths.items():
-        if not os.path.exists(path):
-            print(f'创建{path_type}目录: {path}')
-            os.makedirs(path, exist_ok=True)
-    
-    # 设置日志
-    log_format = "%(asctime)s - %(levelname)s - %(message)s"
-    log_file = os.path.join(paths['log'], f'{model_tag}.log')
-    logging.basicConfig(filename=log_file, level=logging.INFO, format=log_format)
-    
-    logging.info(f"评委数量: {args.get('num_judges', 'N/A')}")
-    logging.info(f"平均听众ID: {args.get('mean_listener_id', 'N/A')}")
+    # 配置日志
+    _setup_logging(paths['log'], model_tag, args)
     
     return paths['model'], paths['tensorboard'], model_tag
 

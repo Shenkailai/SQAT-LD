@@ -120,24 +120,55 @@ class Config:
         return config
     
     def validate(self) -> None:
-        """验证配置参数的有效性"""
+        """
+        验证配置参数的有效性
+        
+        Raises:
+            ValueError: 如果配置参数无效
+        """
+        # 路径验证
         if not self.datapath:
             raise ValueError("datapath不能为空")
         
         if not os.path.exists(self.datapath):
             print(f"[Warning] 数据路径不存在: {self.datapath}")
         
+        # 训练参数验证
         if self.batch_size <= 0:
-            raise ValueError("batch_size必须大于0")
+            raise ValueError(f"batch_size必须大于0，得到: {self.batch_size}")
         
         if self.n_epochs <= 0:
-            raise ValueError("n_epochs必须大于0")
+            raise ValueError(f"n_epochs必须大于0，得到: {self.n_epochs}")
         
         if self.tr_lr <= 0:
-            raise ValueError("学习率必须大于0")
+            raise ValueError(f"学习率必须大于0，得到: {self.tr_lr}")
         
+        if self.tr_wd < 0:
+            raise ValueError(f"权重衰减不能为负数，得到: {self.tr_wd}")
+        
+        if self.num_workers < 0:
+            raise ValueError(f"工作进程数不能为负数，得到: {self.num_workers}")
+        
+        # 数据集验证
         if not self.csv_db_train:
             raise ValueError("csv_db_train不能为空")
+        
+        # 模型参数验证
+        if self.target_length <= 0:
+            raise ValueError(f"target_length必须大于0，得到: {self.target_length}")
+        
+        if self.mel_bins <= 0:
+            raise ValueError(f"mel_bins必须大于0，得到: {self.mel_bins}")
+        
+        if self.fstride <= 0 or self.tstride <= 0:
+            raise ValueError("fstride和tstride必须大于0")
+        
+        if self.fshape <= 0 or self.tshape <= 0:
+            raise ValueError("fshape和tshape必须大于0")
+        
+        # 损失函数参数验证
+        if self.gamma < 0:
+            raise ValueError(f"gamma不能为负数，得到: {self.gamma}")
         
         print("[Info] 配置验证通过")
     
