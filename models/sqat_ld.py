@@ -189,7 +189,7 @@ class SQAT_LD(nn.Module):
         # 最终重排列用于评分
         x = rearrange(x, 'b c h w -> b (h w) c', h=self.f_dim, w=self.t_dim)
         
-        # 计算特征评分和权重（共享计算，避免重复）
+        # 计算特征评分和权重（共享计算, 避免重复）
         features = self.fc_score(x)  # [B, seq_len, 2]
         weights = self.fc_weight(x)  # [B, seq_len, 2]
         
